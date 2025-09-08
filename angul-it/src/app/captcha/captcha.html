@@ -1,0 +1,64 @@
+<div class="captcha-container">
+  <h2>Stage {{ currentStage }} of {{ totalStages }}</h2>
+  <p class="challenge-text">{{ currentChallenge.instruction }}</p>
+  
+  <!-- Validation Message -->
+  <div 
+    *ngIf="showValidation" 
+    class="validation-message"
+    [class.success]="isCorrect"
+    [class.error]="!isCorrect">
+    <i class="icon" [class.check]="isCorrect" [class.warning]="!isCorrect"></i>
+    {{ validationMessage }}
+  </div>
+  
+  <div class="image-grid">
+    <div 
+      *ngFor="let image of currentChallenge.images; let i = index"
+      class="image-item"
+      [class.selected]="selectedImages.includes(i)"
+      [class.correct-answer]="shouldShowCorrectIndicator(i)"
+      [class.wrong-answer]="shouldShowIncorrectIndicator(i)"
+      [class.disabled]="showValidation && isCorrect"
+      (click)="toggleImageSelection(i)">
+      <img [src]="image.src" [alt]="image.alt">
+      
+      <!-- Correct indicator -->
+      <div *ngIf="shouldShowCorrectIndicator(i)" class="indicator correct-indicator">
+        ✓
+      </div>
+      
+      <!-- Wrong indicator -->
+      <div *ngIf="shouldShowIncorrectIndicator(i)" class="indicator wrong-indicator">
+        ✗
+      </div>
+    </div>
+  </div>
+  
+  <div class="challenge-controls">
+    <button 
+      class="btn btn-secondary" 
+      (click)="previousStage()" 
+      [disabled]="currentStage === 1 || (showValidation && isCorrect)">
+      Previous
+    </button>
+    
+    <button 
+      class="btn btn-primary" 
+      (click)="nextStage()" 
+      [disabled]="selectedImages.length === 0 || (showValidation && isCorrect)">
+      {{ currentStage === totalStages ? 'Complete' : 'Verify & Next' }}
+    </button>
+  </div>
+  
+  <!-- Attempt counter -->
+  <div class="attempt-info" *ngIf="attemptCount > 0 && !isCorrect">
+    Attempts: {{ attemptCount }} / {{ maxAttempts }}
+  </div>
+  
+  <div class="progress-indicator">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="(currentStage / totalStages) * 100"></div>
+    </div>
+  </div>
+</div>
