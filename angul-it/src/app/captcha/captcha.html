@@ -1,64 +1,96 @@
 <div class="captcha-container">
-  <h2>Stage {{ currentStage }} of {{ totalStages }}</h2>
-  <p class="challenge-text">{{ currentChallenge.instruction }}</p>
   
-  <!-- Validation Message -->
-  <div 
-    *ngIf="showValidation" 
-    class="validation-message"
-    [class.success]="isCorrect"
-    [class.error]="!isCorrect">
-    <i class="icon" [class.check]="isCorrect" [class.warning]="!isCorrect"></i>
-    {{ validationMessage }}
-  </div>
-  
-  <div class="image-grid">
-    <div 
-      *ngFor="let image of currentChallenge.images; let i = index"
-      class="image-item"
-      [class.selected]="selectedImages.includes(i)"
-      [class.correct-answer]="shouldShowCorrectIndicator(i)"
-      [class.wrong-answer]="shouldShowIncorrectIndicator(i)"
-      [class.disabled]="showValidation && isCorrect"
-      (click)="toggleImageSelection(i)">
-      <img [src]="image.src" [alt]="image.alt">
-      
-      <!-- Correct indicator -->
-      <div *ngIf="shouldShowCorrectIndicator(i)" class="indicator correct-indicator">
-        ✓
-      </div>
-      
-      <!-- Wrong indicator -->
-      <div *ngIf="shouldShowIncorrectIndicator(i)" class="indicator wrong-indicator">
-        ✗
+  <!-- Progress Restore Prompt -->
+  <div *ngIf="showRestorePrompt" class="restore-prompt">
+    <div class="restore-content">
+      <h3>Continue Previous Session?</h3>
+      <p>We found your previous progress. Would you like to continue where you left off?</p>
+      <div class="restore-buttons">
+        <button class="btn btn-primary" (click)="restoreProgress()">
+          Continue Progress
+        </button>
+        <button class="btn btn-secondary" (click)="startFresh()">
+          Start Fresh
+        </button>
       </div>
     </div>
   </div>
-  
-  <div class="challenge-controls">
-    <button 
-      class="btn btn-secondary" 
-      (click)="previousStage()" 
-      [disabled]="currentStage === 1 || (showValidation && isCorrect)">
-      Previous
-    </button>
+
+  <!-- Main Captcha Content (hidden when restore prompt is shown) -->
+  <div *ngIf="!showRestorePrompt">
+    <h2>Stage {{ currentStage }} of {{ totalStages }}</h2>
+    <p class="challenge-text">{{ currentChallenge.instruction }}</p>
     
-    <button 
-      class="btn btn-primary" 
-      (click)="nextStage()" 
-      [disabled]="selectedImages.length === 0 || (showValidation && isCorrect)">
-      {{ currentStage === totalStages ? 'Complete' : 'Verify & Next' }}
-    </button>
-  </div>
-  
-  <!-- Attempt counter -->
-  <div class="attempt-info" *ngIf="attemptCount > 0 && !isCorrect">
-    Attempts: {{ attemptCount }} / {{ maxAttempts }}
-  </div>
-  
-  <div class="progress-indicator">
-    <div class="progress-bar">
-      <div class="progress-fill" [style.width.%]="(currentStage / totalStages) * 100"></div>
+    <!-- Validation Message -->
+    <div 
+      *ngIf="showValidation" 
+      class="validation-message"
+      [class.success]="isCorrect"
+      [class.error]="!isCorrect">
+      <i class="icon" [class.check]="isCorrect" [class.warning]="!isCorrect"></i>
+      {{ validationMessage }}
+    </div>
+    
+    <div class="image-grid">
+      <div 
+        *ngFor="let image of currentChallenge.images; let i = index"
+        class="image-item"
+        [class.selected]="selectedImages.includes(i)"
+        [class.correct-answer]="shouldShowCorrectIndicator(i)"
+        [class.wrong-answer]="shouldShowIncorrectIndicator(i)"
+        [class.disabled]="showValidation && isCorrect"
+        (click)="toggleImageSelection(i)">
+        <img [src]="image.src" [alt]="image.alt">
+        
+        <!-- Correct indicator -->
+        <div *ngIf="shouldShowCorrectIndicator(i)" class="indicator correct-indicator">
+          ✓
+        </div>
+        
+        <!-- Wrong indicator -->
+        <div *ngIf="shouldShowIncorrectIndicator(i)" class="indicator wrong-indicator">
+          ✗
+        </div>
+      </div>
+    </div>
+    
+    <div class="challenge-controls">
+      <button 
+        class="btn btn-secondary" 
+        (click)="previousStage()" 
+        [disabled]="currentStage === 1 || (showValidation && isCorrect)">
+        Previous
+      </button>
+      
+      <button 
+        class="btn btn-primary" 
+        (click)="nextStage()" 
+        [disabled]="selectedImages.length === 0 || (showValidation && isCorrect)">
+        {{ currentStage === totalStages ? 'Complete' : 'Verify & Next' }}
+      </button>
+    </div>
+    
+    <!-- ✅ UPDATED: Attempt counter with validation -->
+    <div class="attempt-info" *ngIf="attemptCount > 0 && !isCorrect">
+      <span *ngIf="attemptCount <= maxAttempts; else invalidAttempts">
+        Attempts: {{ attemptCount }}/{{ maxAttempts }}
+      </span>
+      
+      <!-- Fallback for corrupted data -->
+      <ng-template #invalidAttempts>
+        <span class="error">Attempt data corrupted - restarting stage</span>
+      </ng-template>
+    </div>
+    
+    <!-- Completed stages indicator -->
+    <div class="completed-stages" *ngIf="completedStages.length > 0">
+      Stages Completed: {{ completedStages.join(', ') }}
+    </div>
+    
+    <div class="progress-indicator">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="(currentStage / totalStages) * 100"></div>
+      </div>
     </div>
   </div>
 </div>

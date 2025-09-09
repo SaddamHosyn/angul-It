@@ -5,6 +5,36 @@
   text-align: center;
 }
 
+/* Progress Restore Prompt */
+.restore-prompt {
+  background-color: #f8f9fa;
+  border: 2px solid #007bff;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.restore-content h3 {
+  color: #007bff;
+  margin-bottom: 1rem;
+}
+
+.restore-content p {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+}
+
+.restore-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.restore-buttons .btn {
+  min-width: 140px;
+}
+
 .challenge-text {
   font-size: 1.2rem;
   font-weight: bold;
@@ -173,6 +203,13 @@
   margin-bottom: 1rem;
 }
 
+.completed-stages {
+  font-size: 0.9rem;
+  color: #28a745;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
 .progress-indicator {
   width: 100%;
 }
@@ -191,6 +228,24 @@
   transition: width 0.3s ease;
 }
 
+
+.attempt-info .error {
+  color: #dc3545;
+  font-weight: bold;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+
+
+
+
+
+
+
 @media (max-width: 768px) {
   .image-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -199,4 +254,11 @@
   .captcha-container {
     padding: 1rem;
   }
+  
+  .restore-buttons {
+    flex-direction: column;
+  }
 }
+
+
+
