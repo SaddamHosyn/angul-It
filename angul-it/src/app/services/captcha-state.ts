@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
 
+// Browser check helper
+function isBrowser(): boolean {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
 
 interface CaptchaProgress {
   currentStage: number;
@@ -7,23 +11,21 @@ interface CaptchaProgress {
   attemptCount: number;
   completedStages: number[];
   timestamp: number;
-  startTime: number;  // Add this for time tracking
+  startTime: number;
 }
 
-
 @Injectable({
-  providedIn: 'root'  // ✅ ADD THIS LINE
+  providedIn: 'root'
 })
-
-
 export class CaptchaState {
   private readonly STORAGE_KEY = 'angul-it-captcha-progress';
   private readonly EXPIRY_HOURS = 24;
 
   constructor() {}
 
-  // ✅ UPDATED: Include startTime parameter
   saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number): void {
+    if (!isBrowser()) return; // Guard for SSR
+    
     const existingProgress = this.loadProgress();
     
     const progress: CaptchaProgress = {
@@ -43,42 +45,45 @@ export class CaptchaState {
     }
   }
 
-  // ✅ NEW: Method to initialize with start time
   initializeProgress(): void {
+    if (!isBrowser()) return; // Guard for SSR
+    
     const startTime = Date.now();
     this.saveProgress(1, [], 0, [], startTime);
   }
 
-  // Existing methods remain the same...
-loadProgress(): CaptchaProgress | null {
-  try {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
-    if (!saved) {
-      return null;
-    }
-
-    const progress: CaptchaProgress = JSON.parse(saved);
+  loadProgress(): CaptchaProgress | null {
+    if (!isBrowser()) return null; // Guard for SSR
     
-    if (this.isProgressExpired(progress.timestamp)) {
-      this.clearProgress();
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (!saved) {
+        return null;
+      }
+
+      const progress: CaptchaProgress = JSON.parse(saved);
+      
+      if (this.isProgressExpired(progress.timestamp)) {
+        this.clearProgress();
+        return null;
+      }
+
+      // Validate and sanitize loaded data
+      progress.attemptCount = Math.min(progress.attemptCount || 0, 3);
+      progress.currentStage = Math.max(1, Math.min(progress.currentStage || 1, 3));
+      progress.completedStages = progress.completedStages || [];
+      progress.selectedImages = progress.selectedImages || [];
+
+      return progress;
+    } catch (error) {
+      console.error('Failed to load progress from localStorage:', error);
       return null;
     }
-
-    // ✅ FIX: Validate and sanitize loaded data
-    progress.attemptCount = Math.min(progress.attemptCount || 0, 3); // Cap at 3
-    progress.currentStage = Math.max(1, Math.min(progress.currentStage || 1, 3)); // Between 1-3
-    progress.completedStages = progress.completedStages || [];
-    progress.selectedImages = progress.selectedImages || [];
-
-    return progress;
-  } catch (error) {
-    console.error('Failed to load progress from localStorage:', error);
-    return null;
   }
-}
-
 
   clearProgress(): void {
+    if (!isBrowser()) return; // Guard for SSR
+    
     try {
       localStorage.removeItem(this.STORAGE_KEY);
       console.log('Progress cleared');
@@ -93,11 +98,15 @@ loadProgress(): CaptchaProgress | null {
   }
 
   hasSavedProgress(): boolean {
+    if (!isBrowser()) return false; // Guard for SSR
+    
     const progress = this.loadProgress();
     return progress !== null;
   }
 
   getProgressSummary(): { stage: number; total: number } | null {
+    if (!isBrowser()) return null; // Guard for SSR
+    
     const progress = this.loadProgress();
     if (!progress) {
       return null;

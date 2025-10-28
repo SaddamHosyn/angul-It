@@ -40,7 +40,7 @@
         [class.wrong-answer]="shouldShowIncorrectIndicator(i)"
         [class.disabled]="showValidation && isCorrect"
         (click)="toggleImageSelection(i)">
-        <img [src]="image.src" [alt]="image.alt">
+       <img [src]="getSafeImage(image.src)" [alt]="image.alt">
         
         <!-- Correct indicator -->
         <div *ngIf="shouldShowCorrectIndicator(i)" class="indicator correct-indicator">
