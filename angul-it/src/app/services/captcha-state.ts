@@ -12,6 +12,7 @@ interface CaptchaProgress {
   completedStages: number[];
   timestamp: number;
   startTime: number;
+  challengeInstructions?: string[]; // Store actual challenge instructions
 }
 
 @Injectable({
@@ -23,7 +24,7 @@ export class CaptchaState {
 
   constructor() {}
 
-  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number): void {
+  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number, challengeInstructions?: string[]): void {
     if (!isBrowser()) return; // Guard for SSR
     
     const existingProgress = this.loadProgress();
@@ -34,12 +35,12 @@ export class CaptchaState {
       attemptCount,
       completedStages,
       timestamp: Date.now(),
-      startTime: startTime || existingProgress?.startTime || Date.now()
+      startTime: startTime || existingProgress?.startTime || Date.now(),
+      challengeInstructions: challengeInstructions || existingProgress?.challengeInstructions
     };
     
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(progress));
-      console.log('Progress saved:', progress);
     } catch (error) {
       console.error('Failed to save progress to localStorage:', error);
     }
@@ -86,7 +87,6 @@ export class CaptchaState {
     
     try {
       localStorage.removeItem(this.STORAGE_KEY);
-      console.log('Progress cleared');
     } catch (error) {
       console.error('Failed to clear progress:', error);
     }

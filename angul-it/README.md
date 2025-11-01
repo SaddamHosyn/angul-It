@@ -1,106 +1,77 @@
-# 🤖 Angul-It - Interactive CAPTCHA Challenge
+# Angul-It 🤖
 
-A modern, interactive CAPTCHA application built with **Angular 20** that challenges users to prove they're human through a series of image selection tasks. This project demonstrates advanced Angular features including standalone components, route guards, state management, and responsive design.
+A modern, multi-stage CAPTCHA verification system built with Angular 20. This application challenges users to prove they're human through intelligent image recognition tasks, featuring dynamic challenge generation, state management, and a beautiful user interface.
 
-[![Angular](https://img.shields.io/badge/Angular-20.2.0-DD0031?logo=angular)](https://angular.io/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Angular](https://img.shields.io/badge/Angular-20.2-DD0031?style=flat&logo=angular)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat&logo=typescript)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## ✨ Features
 
-### 🎯 Core Functionality
+### Core Functionality
 
-- **Multi-Stage CAPTCHA Challenges** - Three progressive stages with different image recognition tasks
-- **Smart Validation System** - Real-time feedback with attempt tracking (3 attempts per stage)
-- **Progress Persistence** - Automatic save/restore functionality using browser storage
-- **Route Protection** - Guard-based navigation to ensure proper user flow
-- **Performance Tracking** - Time tracking and completion percentage calculation
-- **Responsive Design** - Mobile-first approach with seamless desktop experience
+- **🎯 Multi-Stage Challenges**: Three progressive CAPTCHA stages with varying difficulty
+- **🔀 Dynamic Challenge Generation**: Randomly generated math and text-based challenges
+- **💾 State Management**: Progress persistence using localStorage (survives page refresh)
+- **🔒 Route Guards**: Prevents unauthorized access to results page
+- **📱 Responsive Design**: Fully optimized for desktop and mobile devices
+- **🎨 Animated UI**: Smooth transitions and engaging visual feedback
 
-### 🏗️ Technical Highlights
+### Challenge Types
 
-- ✅ **Standalone Components** - Modern Angular architecture
-- 🔒 **Route Guards** - Prevent unauthorized access to results page
-- 💾 **State Management Service** - Centralized state handling with persistence
-- 🎨 **SVG-based Images** - Lightweight, scalable graphics
-- ♿ **Accessibility** - Semantic HTML and ARIA attributes
-- 🚀 **Server-Side Rendering (SSR)** - Angular Universal support
+1. **Math Challenges**: Select images with specific calculation results
 
-## 🔧 Prerequisites
+   - Equals specific value (12, 15, 18)
+   - Greater than threshold (> 20)
+   - Less than threshold (< 10)
 
-Before you begin, ensure you have the following installed:
+2. **Text Recognition**: Identify images containing specific words
+   - VERIFY, HUMAN, ACCESS, VALID, SECURE
 
-- **Node.js** - Version 18.x or higher ([Download](https://nodejs.org/))
-- **npm** - Version 9.x or higher (comes with Node.js)
-- **Angular CLI** - Version 20.x (optional, will be installed with dependencies)
+### User Experience
 
-Verify your installations:
+- ✅ Real-time validation feedback
+- ⚠️ Attempt tracking (max 3 attempts per stage)
+- 🔄 Progress restore on page refresh
+- 🎉 Celebration animation on completion
+- 📊 Detailed results summary
 
-```bash
-node --version  # Should output v18.x or higher
-npm --version   # Should output v9.x or higher
-```
+## 🚀 Getting Started
 
-## 📦 Installation
+### Prerequisites
 
-### Step 1: Clone or Navigate to the Repository
+- Node.js (v20 or higher)
+- npm
+- Angular CLI (v20.2.2)
 
-```bash
-cd d:\Projects\angul-it\angul-it
-```
+### Installation
 
-### Step 2: Install Dependencies
+1. **Clone the repository**
 
-```bash
-npm install
-```
+   ```bash
+   git clone https://github.com/SaddamHosyn/angul-It.git
+   cd angul-It
+   ```
 
-This will install all required packages including:
+2. **Install dependencies**
 
-- Angular 20 framework and libraries
-- TypeScript compiler
-- Development tools and testing frameworks
+   ```bash
+   npm install
+   ```
 
-### Step 3: Verify Installation
+3. **Start development server**
 
-```bash
-npm list --depth=0
-```
+   ```bash
+   npm start
+   ```
 
-## 🚀 Usage
+4. **Open your browser**
+   Navigate to `http://localhost:4200/`
 
-### Starting the Development Server
-
-**Option 1: Using npm script (Recommended)**
+### Run Tests
 
 ```bash
-npm start
-```
-
-**Option 2: Using Angular CLI directly**
-
-```bash
-ng serve
-```
-
-The development server will start on `http://localhost:4200/`. The application will automatically reload if you make changes to any source files.
-
-### Accessing the Application
-
-1. Open your browser and navigate to **http://localhost:4200/**
-2. Click "Start Challenge" on the home page
-3. Complete the three CAPTCHA stages:
-   - **Stage 1**: Select all images with CARS 🚗
-   - **Stage 2**: Select all images with TRAFFIC LIGHTS 🚦
-   - **Stage 3**: Select all images with CROSSWALKS 🚶
-4. View your results and performance metrics
-
-### User Flow
-
-```
-Home Page → CAPTCHA Challenge (3 Stages) → Results Page
-    ↑              ↓ (auto-save)                 ↓
-    └──────────── Start New Challenge ───────────┘
+npm test
 ```
 
 ## 📁 Project Structure
@@ -109,125 +80,104 @@ Home Page → CAPTCHA Challenge (3 Stages) → Results Page
 angul-it/
 ├── src/
 │   ├── app/
-│   │   ├── captcha/              # Main CAPTCHA challenge component
-│   │   │   ├── captcha.ts        # Component logic with 3 stages
-│   │   │   ├── captcha.html      # Template with image grid
-│   │   │   ├── captcha.css       # Styling
-│   │   │   └── captcha.spec.ts   # Unit tests
-│   │   │
-│   │   ├── home/                 # Landing page component
+│   │   ├── captcha/          # CAPTCHA challenge component
+│   │   │   ├── captcha.ts
+│   │   │   ├── captcha.html
+│   │   │   └── captcha.css
+│   │   ├── home/             # Landing page
 │   │   │   ├── home.ts
 │   │   │   ├── home.html
-│   │   │   ├── home.css
-│   │   │   └── home.spec.ts
-│   │   │
-│   │   ├── result/               # Results display component
-│   │   │   ├── result.ts         # Performance metrics & completion
+│   │   │   └── home.css
+│   │   ├── result/           # Results display
+│   │   │   ├── result.ts
 │   │   │   ├── result.html
-│   │   │   ├── result.css
-│   │   │   └── result.spec.ts
-│   │   │
-│   │   ├── services/             # Shared services
-│   │   │   ├── captcha-state.ts  # State management & persistence
-│   │   │   └── captcha-state.spec.ts
-│   │   │
-│   │   ├── guards/               # Route protection
-│   │   │   ├── result-guard-guard.ts  # Prevents direct result access
-│   │   │   └── result-guard-guard.spec.ts
-│   │   │
-│   │   ├── app.config.ts         # Application configuration
-│   │   ├── app.routes.ts         # Routing configuration
-│   │   └── app.ts                # Root component
-│   │
-│   ├── index.html                # Main HTML file
-│   ├── main.ts                   # Application entry point
-│   ├── styles.css                # Global styles
-│   └── server.ts                 # SSR server configuration
-│
-├── public/                       # Static assets
-├── angular.json                  # Angular workspace config
-├── package.json                  # Dependencies and scripts
-├── tsconfig.json                 # TypeScript configuration
-└── README.md                     # This file
+│   │   │   └── result.css
+│   │   ├── guards/           # Route protection
+│   │   │   └── result-guard-guard.ts
+│   │   ├── services/         # State management
+│   │   │   └── captcha-state.ts
+│   │   └── app.routes.ts     # Application routing
+│   └── public/               # Static assets
+├── angular.json              # Angular configuration
+├── package.json              # Dependencies
+└── tsconfig.json             # TypeScript config
 ```
 
-## 🎯 Features In-Depth
+## 🎮 How It Works
 
-### CAPTCHA Challenge System
+### User Flow
 
-The application implements a sophisticated multi-stage CAPTCHA system:
+1. **Home Page**
 
-**Challenge Structure:**
+   - Welcome screen with project overview
 
-- Each stage presents 9 images in a 3x3 grid
-- Users must identify and select images matching specific criteria
-- Three attempts are allowed per stage
-- Incorrect selections are highlighted in red
-- Correct answers are shown after validation
+2. **Challenge Stages** (3 total)
 
-**CaptchaState Service** provides:
+   - Stage 1: Random challenge generation
+   - Stage 2: Different challenge type
+   - Stage 3: Final verification
+   - Each stage allows up to 3 attempts
+   - Navigate between stages with Previous/Next buttons
 
-- Progress tracking across page refreshes
-- LocalStorage-based persistence
-- Start time recording for performance metrics
-- Restore functionality for interrupted sessions
+3. **Results Page**
+   - Stage-by-stage completion summary
+   - Success indicators for each completed stage
+   - Option to start new challenge
+   - Return to home page
 
-**ResultGuard** ensures:
+## 🛠️ Technology Stack
 
-- Users can't access results without completing challenges
-- Maintains proper application flow
-- Redirects unauthorized access back to home page
+- **Frontend Framework**: Angular 20.2
+- **Language**: TypeScript 5.9
+- **State Management**: Custom service with localStorage
+- **Routing**: Angular Router with Guards
+- **Styling**: Custom CSS with animations
+- **SSR**: Angular Universal (Server-Side Rendering)
+- **Build Tool**: Angular CLI with Vite
 
+## 🎨 Key Features Explained
 
-### Test Files
+### Form Validation
 
-All unit test files are written in **TypeScript** and follow the `*.spec.ts` naming convention:
+- Users cannot proceed without selecting at least one image
+- Validation feedback shown in real-time
+- Maximum attempt limit prevents brute-force
 
-- `src/app/captcha/captcha.spec.ts` - Tests for CAPTCHA component
-- `src/app/home/home.spec.ts` - Tests for Home component
-- `src/app/result/result.spec.ts` - Tests for Result component
-- `src/app/services/captcha-state.spec.ts` - Tests for state service
-- `src/app/guards/result-guard-guard.spec.ts` - Tests for route guard
+### Progress Persistence
 
-> **Note**: `.spec.ts` files are test specification files (unit tests), while `.ts` files are the actual application code.
+```typescript
+// Save progress automatically
+saveProgress(stage, selections, attempts, completed);
 
-## 🔨 Technologies
+// Restore on page load
+loadProgress(); // Returns saved state or null
+```
 
-### Core Framework
+### Route Protection
 
-- **Angular 20.2.0** - Modern web framework
-- **TypeScript 5.9.2** - Type-safe JavaScript
-- **RxJS 7.8.0** - Reactive programming
+```typescript
+// Prevents direct access to results without completion
+canActivate: () => hasCompletedAllStages();
+```
 
-### Angular Modules
+### Challenge Randomization
 
-- `@angular/core` - Core framework
-- `@angular/common` - Common directives and pipes
-- `@angular/router` - Client-side routing
-- `@angular/forms` - Form handling
-- `@angular/platform-browser` - Browser platform
-- `@angular/ssr` - Server-side rendering
+```typescript
+// Fisher-Yates shuffle for true randomness
+shuffleArray<T>(array: T[]): T[]
 
+// Random challenge selection
+generateCaptchaChallenges(): Challenge[]
+```
 
-## 📝 Available Scripts
+## 📝 License
 
-| Script               | Command                                        | Description              |
-| -------------------- | ---------------------------------------------- | ------------------------ |
-| `start`              | `ng serve`                                     | Start development server |
-| `build`              | `ng build`                                     | Build the application    |
-| `watch`              | `ng build --watch --configuration development` | Build in watch mode      |
-| `test`               | `ng test`                                      | Run unit tests           |
-| `serve:ssr:angul-it` | `node dist/angul-it/server/server.mjs`         | Run SSR server           |
+This project is licensed under the MIT License.
 
+## 👤 Author
 
-## 🤝 Contributing
+**Saddam Hosyn**
 
-Contributions are welcome!
+- GitHub: [@SaddamHosyn](https://github.com/SaddamHosyn)
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-**Made with ❤️ using Angular 20**
+**Made with ❤️ using Angular**

@@ -59,14 +59,12 @@ export class CaptchaComponent implements OnInit, OnDestroy {
 
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
-    for (let pass = 0; pass < 3; pass++) {
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const randomValue = typeof crypto !== 'undefined' && crypto.getRandomValues
-          ? crypto.getRandomValues(new Uint32Array(1))[0] / 0xFFFFFFFF
-          : Math.random();
-        const j = Math.floor(randomValue * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const randomValue = typeof crypto !== 'undefined' && crypto.getRandomValues
+        ? crypto.getRandomValues(new Uint32Array(1))[0] / 0xFFFFFFFF
+        : Math.random();
+      const j = Math.floor(randomValue * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
   }
@@ -254,8 +252,7 @@ export class CaptchaComponent implements OnInit, OnDestroy {
       return this.generateCaptchaChallenges();
     }
 
-    let shuffledChallenges = this.shuffleArray(availableChallenges);
-    shuffledChallenges = this.shuffleArray(shuffledChallenges);
+    const shuffledChallenges = this.shuffleArray(availableChallenges);
     const selectedChallenges = shuffledChallenges.slice(0, 3);
 
     selectedChallenges.forEach(challenge => {
@@ -267,8 +264,7 @@ export class CaptchaComponent implements OnInit, OnDestroy {
       let correctIndices: number[] = [];
 
       if (challenge.type === 'math') {
-        let shuffledEquations = this.shuffleArray(challenge.equations);
-        shuffledEquations = this.shuffleArray(shuffledEquations);
+        const shuffledEquations = this.shuffleArray(challenge.equations);
         
         imagesData = shuffledEquations.map((eq, idx) => {
           if (eq.isCorrect) correctIndices.push(idx);
@@ -279,8 +275,7 @@ export class CaptchaComponent implements OnInit, OnDestroy {
           };
         });
       } else {
-        let shuffledTexts = this.shuffleArray(challenge.texts);
-        shuffledTexts = this.shuffleArray(shuffledTexts);
+        const shuffledTexts = this.shuffleArray(challenge.texts);
         
         imagesData = shuffledTexts.map((t, idx) => {
           if (t.isCorrect) correctIndices.push(idx);
@@ -437,17 +432,23 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     
     if (!this.stateService.hasSavedProgress()) {
       this.stateService.initializeProgress();
+      // Save challenge instructions immediately after generation
+      const challengeInstructions = this.challenges.map(c => c.instruction);
+      this.stateService.saveProgress(1, [], 0, [], Date.now(), challengeInstructions);
     }
     
     setTimeout(() => this.handleCompletedUser(), 100);
   }
 
   private saveCurrentProgress() {
+    const challengeInstructions = this.challenges.map(c => c.instruction);
     this.stateService.saveProgress(
       this.currentStage,
       this.selectedImages,
       this.attemptCount,
-      this.completedStages
+      this.completedStages,
+      undefined,
+      challengeInstructions
     );
   }
 
@@ -540,7 +541,8 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
       } else {
         this.currentStage++;
         this.resetStage();
-        this.challenges = this.generateCaptchaChallenges();
+        // DON'T regenerate challenges - keep the same ones!
+        // this.challenges = this.generateCaptchaChallenges(); // REMOVED
         this.saveCurrentProgress();
       }
       
@@ -570,7 +572,8 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
         } else {
           this.currentStage++;
           this.resetStage();
-          this.challenges = this.generateCaptchaChallenges();
+          // DON'T regenerate challenges - keep the same ones!
+          // this.challenges = this.generateCaptchaChallenges(); // REMOVED
           this.saveCurrentProgress();
         }
       }

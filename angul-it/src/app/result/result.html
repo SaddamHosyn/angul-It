@@ -13,14 +13,6 @@
       <div class="card-value">{{ completedStages }}/{{ totalStages }}</div>
       <div class="card-label">Stages Completed</div>
     </div>
-    <div class="summary-card">
-      <div class="card-value">{{ completionPercentage }}%</div>
-      <div class="card-label">Completion Rate</div>
-    </div>
-    <div class="summary-card">
-      <div class="card-value">{{ completionTime }}</div>
-      <div class="card-label">Time Taken</div>
-    </div>
   </div>
 
   <!-- Completion Message -->
@@ -32,22 +24,18 @@
   <div class="detailed-results">
     <h3>Stage-by-Stage Results</h3>
     <div class="results-list">
-      <div 
-        *ngFor="let result of results" 
-        class="result-item"
-        [class]="result.status">
-        
+      <div *ngFor="let result of results" class="result-item" [class]="result.status">
         <div class="result-icon">
           <span *ngIf="result.status === 'success'">✅</span>
           <span *ngIf="result.status === 'partial'">⚠️</span>
           <span *ngIf="result.status === 'skipped'">⏭️</span>
         </div>
-        
+
         <div class="result-content">
           <div class="result-title">Stage {{ result.stage }}</div>
           <div class="result-description">{{ result.instruction }}</div>
         </div>
-        
+
         <div class="result-status">
           <span *ngIf="result.status === 'success'" class="status-text success">Completed</span>
           <span *ngIf="result.status === 'partial'" class="status-text partial">Attempted</span>
@@ -57,49 +45,23 @@
     </div>
   </div>
 
-  <!-- Progress Bar -->
-  <div class="progress-section">
-    <div class="progress-label">Overall Progress</div>
-    <div class="progress-bar">
-      <div 
-        class="progress-fill" 
-        [style.width.%]="completionPercentage"
-        [class]="performanceRating.toLowerCase()">
-      </div>
-    </div>
-    <div class="progress-text">{{ completionPercentage }}% Complete</div>
-  </div>
-
   <!-- Action Buttons -->
   <div class="action-buttons">
-    <button 
-      class="btn btn-primary" 
-      (click)="startNewChallenge()">
-      🔄 Start New Challenge
-    </button>
-    <button 
-      class="btn btn-secondary" 
-      (click)="goHome()">
-      🏠 Go Home
-    </button>
+    <button class="btn btn-primary" (click)="startNewChallenge()">🔄 Start New Challenge</button>
+    <button class="btn btn-secondary" (click)="goHome()">🏠 Go Home</button>
   </div>
 
-<!-- Celebration Animation -->
-<div *ngIf="showCelebration" 
-     class="celebration-overlay"
-     (click)="dismissCelebration()">
-  <div class="celebration-content" 
-       (click)="$event.stopPropagation()">
-    <div class="celebration-emoji">🎉🎊✨</div>
-    <div class="celebration-text">Amazing Work!</div>
-    
-    <!-- Add close button -->
-    <button class="celebration-close" 
-            (click)="dismissCelebration()">
-      ✕
-    </button>
-    
-    <!-- Add instruction -->
-    <p class="celebration-instruction">Click anywhere to continue</p>
+  <!-- Celebration Animation -->
+  <div *ngIf="showCelebration" class="celebration-overlay" (click)="dismissCelebration()">
+    <div class="celebration-content" (click)="$event.stopPropagation()">
+      <div class="celebration-emoji">🎉🎊✨</div>
+      <div class="celebration-text">Amazing Work!</div>
+
+      <!-- Add close button -->
+      <button class="celebration-close" (click)="dismissCelebration()">✕</button>
+
+      <!-- Add instruction -->
+      <p class="celebration-instruction">Click anywhere to continue</p>
+    </div>
   </div>
 </div>

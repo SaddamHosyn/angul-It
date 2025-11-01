@@ -21,15 +21,7 @@ export class ResultComponent implements OnInit {
   results: ChallengeResult[] = [];
   totalStages = 3;
   completedStages = 0;
-  completionPercentage = 0;
-  completionTime: string = '';
   showCelebration = false;
-
-  challengeData = [
-    { stage: 1, instruction: 'Select all images with CARS' },
-    { stage: 2, instruction: 'Select all images with TRAFFIC LIGHTS' },
-    { stage: 3, instruction: 'Select all images with CROSSWALKS' }
-  ];
 
   constructor(
     private router: Router,
@@ -46,52 +38,22 @@ private loadResults() {
   
   if (progress) {
     this.completedStages = progress.completedStages.length;
-    this.completionPercentage = Math.round((this.completedStages / this.totalStages) * 100);
     
-    // ✅ FIXED: Calculate total time from start to now
-    const totalTimeSpent = Date.now() - progress.startTime;
-    this.completionTime = this.formatTime(totalTimeSpent);
+    // Use actual challenge instructions from saved progress
+    const instructions = progress.challengeInstructions || [];
     
-    // Generate results for each stage
-    this.results = this.challengeData.map(challenge => ({
-      stage: challenge.stage,
-      instruction: challenge.instruction,
-      completed: progress.completedStages.includes(challenge.stage),
-      status: this.getStageStatus(challenge.stage, progress.completedStages)
+    this.results = progress.completedStages.map(stageNum => ({
+      stage: stageNum,
+      instruction: instructions[stageNum - 1] || `Challenge ${stageNum}`,
+      completed: true,
+      status: 'success' as const
     }));
   } else {
     // Fallback if no progress found
-    this.completionTime = "0s";
-    this.results = this.challengeData.map(challenge => ({
-      stage: challenge.stage,
-      instruction: challenge.instruction,
-      completed: false,
-      status: 'skipped' as const
-    }));
+    this.results = [];
   }
 }
 
-
-  private getStageStatus(stage: number, completedStages: number[]): 'success' | 'partial' | 'skipped' {
-    if (completedStages.includes(stage)) {
-      return 'success';
-    } else if (stage <= Math.max(...completedStages, 0) + 1) {
-      return 'partial';
-    } else {
-      return 'skipped';
-    }
-  }
-
-  private formatTime(milliseconds: number): string {
-    const minutes = Math.floor(milliseconds / 60000);
-    const seconds = Math.floor((milliseconds % 60000) / 1000);
-    
-    if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    } else {
-      return `${seconds}s`;
-    }
-  }
 
   // ✅ UPDATED: Enhanced celebration with auto-dismiss
   private triggerCelebration() {
@@ -139,9 +101,10 @@ get completionMessage(): string {
 
 
   get performanceRating(): string {
-    if (this.completionPercentage >= 100) return "Excellent";
-    if (this.completionPercentage >= 67) return "Good";
-    if (this.completionPercentage >= 33) return "Fair";
+    const percentage = Math.round((this.completedStages / this.totalStages) * 100);
+    if (percentage >= 100) return "Excellent";
+    if (percentage >= 67) return "Good";
+    if (percentage >= 33) return "Fair";
     return "Needs Improvement";
   }
 }
