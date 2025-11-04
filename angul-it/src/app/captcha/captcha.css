@@ -106,11 +106,6 @@
   box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
 }
 
-.image-item.correct-answer {
-  border-color: #28a745 !important;
-  box-shadow: 0 0 15px rgba(40, 167, 69, 0.7) !important;
-}
-
 .image-item.wrong-answer {
   border-color: #dc3545 !important;
   box-shadow: 0 0 15px rgba(220, 53, 69, 0.7) !important;
@@ -143,10 +138,6 @@
   font-weight: bold;
   color: white;
   animation: fadeIn 0.3s ease;
-}
-
-.correct-indicator {
-  background-color: #28a745;
 }
 
 .wrong-indicator {

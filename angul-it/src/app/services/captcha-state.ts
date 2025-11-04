@@ -13,6 +13,7 @@ interface CaptchaProgress {
   timestamp: number;
   startTime: number;
   challengeInstructions?: string[]; // Store actual challenge instructions
+  failedStages?: number[]; // Track failed stages separately
 }
 
 @Injectable({
@@ -24,7 +25,7 @@ export class CaptchaState {
 
   constructor() {}
 
-  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number, challengeInstructions?: string[]): void {
+  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number, challengeInstructions?: string[], failedStages?: number[]): void {
     if (!isBrowser()) return; // Guard for SSR
     
     const existingProgress = this.loadProgress();
@@ -36,7 +37,8 @@ export class CaptchaState {
       completedStages,
       timestamp: Date.now(),
       startTime: startTime || existingProgress?.startTime || Date.now(),
-      challengeInstructions: challengeInstructions || existingProgress?.challengeInstructions
+      challengeInstructions: challengeInstructions || existingProgress?.challengeInstructions,
+      failedStages: failedStages || existingProgress?.failedStages || []
     };
     
     try {
@@ -74,6 +76,7 @@ export class CaptchaState {
       progress.currentStage = Math.max(1, Math.min(progress.currentStage || 1, 3));
       progress.completedStages = progress.completedStages || [];
       progress.selectedImages = progress.selectedImages || [];
+      progress.failedStages = progress.failedStages || [];
 
       return progress;
     } catch (error) {

@@ -9,9 +9,13 @@
 
   <!-- Summary Cards -->
   <div class="summary-cards">
-    <div class="summary-card">
-      <div class="card-value">{{ completedStages }}/{{ totalStages }}</div>
-      <div class="card-label">Stages Completed</div>
+    <div class="summary-card success">
+      <div class="card-value">{{ successfulStages }}/{{ totalStages }}</div>
+      <div class="card-label">Stages Passed</div>
+    </div>
+    <div class="summary-card failed" *ngIf="failedStagesCount > 0">
+      <div class="card-value">{{ failedStagesCount }}</div>
+      <div class="card-label">Stages Failed</div>
     </div>
   </div>
 
@@ -27,8 +31,7 @@
       <div *ngFor="let result of results" class="result-item" [class]="result.status">
         <div class="result-icon">
           <span *ngIf="result.status === 'success'">✅</span>
-          <span *ngIf="result.status === 'partial'">⚠️</span>
-          <span *ngIf="result.status === 'skipped'">⏭️</span>
+          <span *ngIf="result.status === 'failed'">❌</span>
         </div>
 
         <div class="result-content">
@@ -37,9 +40,8 @@
         </div>
 
         <div class="result-status">
-          <span *ngIf="result.status === 'success'" class="status-text success">Completed</span>
-          <span *ngIf="result.status === 'partial'" class="status-text partial">Attempted</span>
-          <span *ngIf="result.status === 'skipped'" class="status-text skipped">Skipped</span>
+          <span *ngIf="result.status === 'success'" class="status-text success">Passed</span>
+          <span *ngIf="result.status === 'failed'" class="status-text failed">Failed</span>
         </div>
       </div>
     </div>

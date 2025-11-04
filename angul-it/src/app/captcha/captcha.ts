@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CaptchaState } from '../services/captcha-state';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-
+// one image data
 interface ChallengeImage {
-  src: string;
-  alt: string;
-  category: string;
+  src: string;  // The actual image data in base64
+  alt: string; //equation or text description
 }
-
+//one complete stage data
 interface Challenge {
   instruction: string;
   images: ChallengeImage[];
@@ -28,7 +27,8 @@ export class CaptchaComponent implements OnInit, OnDestroy {
   currentStage = 1;
   totalStages = 3;
   selectedImages: number[] = [];
-  completedStages: number[] = [];
+  completedStages: number[] = []; // Successfully completed stages
+  failedStages: number[] = []; // Failed stages (max attempts reached)
   
   showValidation = false;
   validationMessage = '';
@@ -448,7 +448,8 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
       this.attemptCount,
       this.completedStages,
       undefined,
-      challengeInstructions
+      challengeInstructions,
+      this.failedStages
     );
   }
 
@@ -469,6 +470,7 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
       this.selectedImages = [...savedProgress.selectedImages];
       this.attemptCount = Math.min(savedProgress.attemptCount, this.maxAttempts);
       this.completedStages = [...savedProgress.completedStages];
+      this.failedStages = [...(savedProgress.failedStages || [])];
     }
     this.showRestorePrompt = false;
   }
@@ -556,8 +558,9 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
         );
         this.saveCurrentProgress();
       } else {
-        if (!this.completedStages.includes(this.currentStage)) {
-          this.completedStages.push(this.currentStage);
+        // Max attempts reached - stage FAILED, do NOT add to completedStages
+        if (!this.failedStages.includes(this.currentStage)) {
+          this.failedStages.push(this.currentStage);
         }
         
         this.showValidationMessage(
@@ -614,10 +617,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
 
   isImageCorrect(index: number): boolean {
     return this.currentChallenge.correctAnswers.includes(index);
-  }
-
-  shouldShowCorrectIndicator(index: number): boolean {
-    return this.showValidation && this.isImageCorrect(index);
   }
 
   shouldShowIncorrectIndicator(index: number): boolean {
