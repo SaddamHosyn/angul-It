@@ -56,7 +56,7 @@ export class CaptchaComponent implements OnInit, OnDestroy {
       return Buffer.from(str).toString('base64');
     }
   }
-
+// fisher-yates shuffle
   private shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -70,8 +70,6 @@ export class CaptchaComponent implements OnInit, OnDestroy {
   }
 
   private generateCaptchaChallenges(): Challenge[] {
-    const seed = Date.now();
-    
     type ChallengeData = {
       instruction: string;
       correctCategory: string;
@@ -269,7 +267,7 @@ export class CaptchaComponent implements OnInit, OnDestroy {
         imagesData = shuffledEquations.map((eq, idx) => {
           if (eq.isCorrect) correctIndices.push(idx);
           return {
-            src: this.createNoisyMathCaptcha(eq.equation, seed + idx),
+            src: this.createNoisyMathCaptcha(eq.equation),
             alt: `Math: ${eq.equation}`,
             category: eq.isCorrect ? 'correct' : 'incorrect'
           };
@@ -280,7 +278,7 @@ export class CaptchaComponent implements OnInit, OnDestroy {
         imagesData = shuffledTexts.map((t, idx) => {
           if (t.isCorrect) correctIndices.push(idx);
           return {
-            src: this.createNoisyTextCaptcha(t.text, seed + idx),
+            src: this.createNoisyTextCaptcha(t.text),
             alt: `Text: ${t.text}`,
             category: t.isCorrect ? challenge.correctCategory : 'other'
           };
