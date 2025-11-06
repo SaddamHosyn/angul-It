@@ -31,7 +31,6 @@ A modern, multi-stage CAPTCHA verification system built with Angular 20. This ap
 ### User Experience
 
 - ✅ Real-time validation feedback
-- ⚠️ Attempt tracking (max 3 attempts per stage)
 - 🔄 Progress restore on page refresh
 - 🎉 Celebration animation on completion
 - 📊 Detailed results summary
@@ -67,12 +66,6 @@ A modern, multi-stage CAPTCHA verification system built with Angular 20. This ap
 
 4. **Open your browser**
    Navigate to `http://localhost:4200/`
-
-### Run Tests
-
-```bash
-npm test
-```
 
 ## 📁 Project Structure
 
@@ -116,7 +109,6 @@ angul-it/
    - Stage 1: Random challenge generation
    - Stage 2: Different challenge type
    - Stage 3: Final verification
-   - Each stage allows up to 3 attempts
    - Navigate between stages with Previous/Next buttons
 
 3. **Results Page**
@@ -139,9 +131,9 @@ angul-it/
 
 ### Form Validation
 
-- Users cannot proceed without selecting at least one image
+- Users cannot proceed without selecting all three images
 - Validation feedback shown in real-time
-- Maximum attempt limit prevents brute-force
+- Unlimited attempt limit prevents brute-force
 
 ### Progress Persistence
 
