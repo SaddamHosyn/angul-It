@@ -55,29 +55,21 @@
       <button
         class="btn btn-primary"
         (click)="nextStage()"
-        [disabled]="selectedImages.length === 0 || (showValidation && isCorrect)"
+        [disabled]="selectedImages.length === 0"
       >
         {{ currentStage === totalStages ? 'Complete' : 'Verify & Next' }}
       </button>
     </div>
 
-    <!-- ✅ UPDATED: Attempt counter with validation -->
-    <div class="attempt-info" *ngIf="attemptCount > 0 && !isCorrect">
-      <span *ngIf="attemptCount <= maxAttempts; else invalidAttempts">
-        Attempts: {{ attemptCount }}/{{ maxAttempts }}
-      </span>
-
-      <!-- Fallback for corrupted data -->
-      <ng-template #invalidAttempts>
-        <span class="error">Attempt data corrupted - restarting stage</span>
-      </ng-template>
+    <!-- Attempt counter - shows total attempts made -->
+    <div class="attempt-info" *ngIf="attemptCount > 0">
+      <span>Total Attempts: {{ attemptCount }}</span>
     </div>
 
     <!-- Completed stages indicator -->
     <div class="completed-stages" *ngIf="completedStages.length > 0">
       Stages Completed: {{ completedStages.join(', ') }}
     </div>
-
     <div class="progress-indicator">
       <div class="progress-bar">
         <div class="progress-fill" [style.width.%]="(currentStage / totalStages) * 100"></div>

@@ -12,8 +12,8 @@ interface CaptchaProgress {
   completedStages: number[];
   timestamp: number;
   startTime: number;
+  endTime?: number | null; // Track completion time
   challengeInstructions?: string[]; // Store actual challenge instructions
-  failedStages?: number[]; // Track failed stages separately
 }
 
 @Injectable({
@@ -25,7 +25,7 @@ export class CaptchaState {
 
   constructor() {}
 
-  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number, challengeInstructions?: string[], failedStages?: number[]): void {
+  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number, challengeInstructions?: string[], endTime?: number | null): void {
     if (!isBrowser()) return; // Guard for SSR
     
     const existingProgress = this.loadProgress();
@@ -37,8 +37,8 @@ export class CaptchaState {
       completedStages,
       timestamp: Date.now(),
       startTime: startTime || existingProgress?.startTime || Date.now(),
-      challengeInstructions: challengeInstructions || existingProgress?.challengeInstructions,
-      failedStages: failedStages || existingProgress?.failedStages || []
+      endTime: endTime !== undefined ? endTime : existingProgress?.endTime,
+      challengeInstructions: challengeInstructions || existingProgress?.challengeInstructions
     };
     
     try {
@@ -52,7 +52,7 @@ export class CaptchaState {
     if (!isBrowser()) return; // Guard for SSR
     
     const startTime = Date.now();
-    this.saveProgress(1, [], 0, [], startTime);
+    this.saveProgress(1, [], 0, [], startTime, undefined, null); // Initialize endTime as null
   }
 
   loadProgress(): CaptchaProgress | null {
@@ -72,11 +72,11 @@ export class CaptchaState {
       }
 
       // Validate and sanitize loaded data
-      progress.attemptCount = Math.min(progress.attemptCount || 0, 3);
+      progress.attemptCount = Math.min(progress.attemptCount || 0, 100);
       progress.currentStage = Math.max(1, Math.min(progress.currentStage || 1, 3));
       progress.completedStages = progress.completedStages || [];
       progress.selectedImages = progress.selectedImages || [];
-      progress.failedStages = progress.failedStages || [];
+      progress.endTime = progress.endTime !== undefined ? progress.endTime : null;
 
       return progress;
     } catch (error) {

@@ -10,12 +10,8 @@
   <!-- Summary Cards -->
   <div class="summary-cards">
     <div class="summary-card success">
-      <div class="card-value">{{ successfulStages }}/{{ totalStages }}</div>
-      <div class="card-label">Stages Passed</div>
-    </div>
-    <div class="summary-card failed" *ngIf="failedStagesCount > 0">
-      <div class="card-value">{{ failedStagesCount }}</div>
-      <div class="card-label">Stages Failed</div>
+      <div class="card-value">{{ completedStages }}/{{ totalStages }}</div>
+      <div class="card-label">Stages Completed</div>
     </div>
   </div>
 
@@ -30,8 +26,7 @@
     <div class="results-list">
       <div *ngFor="let result of results" class="result-item" [class]="result.status">
         <div class="result-icon">
-          <span *ngIf="result.status === 'success'">✅</span>
-          <span *ngIf="result.status === 'failed'">❌</span>
+          <span>✅</span>
         </div>
 
         <div class="result-content">
@@ -40,8 +35,7 @@
         </div>
 
         <div class="result-status">
-          <span *ngIf="result.status === 'success'" class="status-text success">Passed</span>
-          <span *ngIf="result.status === 'failed'" class="status-text failed">Failed</span>
+          <span class="status-text success">Completed</span>
         </div>
       </div>
     </div>
@@ -65,5 +59,38 @@
       <!-- Add instruction -->
       <p class="celebration-instruction">Click anywhere to continue</p>
     </div>
+  </div>
+</div>
+
+<div
+  class="result-summary"
+  [ngClass]="{
+    'success-bg': completedStages >= totalStages,
+    'fail-bg': completedStages < totalStages
+  }"
+>
+  <div class="icon-container">
+    <img src="assets/icons/challenges.png" alt="Challenge Icon" class="challenge-icon" />
+  </div>
+  <h2>Challenge Results</h2>
+  <div
+    class="performance-badge"
+    [ngClass]="performanceRating.toLowerCase().replace(' ', '-').replace('!', '')"
+  >
+    {{ performanceRating }}
+  </div>
+  <div class="stages-completed-box">
+    <span class="completed-count">{{ completedStages }}</span> /
+    <span class="total-count">{{ totalStages }}</span>
+    <div class="stages-label">STAGES COMPLETED</div>
+  </div>
+
+  <!-- Display Completion Time -->
+  <div *ngIf="completionTime" class="time-taken">
+    Completed in {{ completionTime | number : '1.1-2' }} seconds
+  </div>
+
+  <div class="completion-message">
+    {{ completionMessage }}
   </div>
 </div>

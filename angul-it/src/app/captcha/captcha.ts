@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CaptchaState } from '../services/captcha-state';
@@ -28,13 +28,12 @@ export class CaptchaComponent implements OnInit, OnDestroy {
   totalStages = 3;
   selectedImages: number[] = [];
   completedStages: number[] = []; // Successfully completed stages
-  failedStages: number[] = []; // Failed stages (max attempts reached)
   
   showValidation = false;
   validationMessage = '';
   isCorrect = false;
-  attemptCount = 0;
-  maxAttempts = 3;
+  attemptCount = 0; // Track attempts for current challenge
+  isTransitioning = false; // Prevent multiple clicks during transition
   
   showRestorePrompt = false;
 
@@ -45,7 +44,8 @@ export class CaptchaComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private stateService: CaptchaState,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private ngZone: NgZone
   ) {}
 
   // SSR-safe base64 encoding
@@ -428,11 +428,16 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     this.checkForSavedProgress();
     this.resetValidation();
     
+    // Only initialize if there's no progress at all.
+    // This prevents re-initialization when navigating back from the results page.
     if (!this.stateService.hasSavedProgress()) {
-      this.stateService.initializeProgress();
-      // Save challenge instructions immediately after generation
-      const challengeInstructions = this.challenges.map(c => c.instruction);
-      this.stateService.saveProgress(1, [], 0, [], Date.now(), challengeInstructions);
+      // Don't initialize here anymore. Let the user start fresh.
+    } else {
+      const progress = this.stateService.loadProgress();
+      if (progress && progress.completedStages.length < 3) {
+        // There's partial progress, so load it.
+        this.restoreProgress();
+      }
     }
     
     setTimeout(() => this.handleCompletedUser(), 100);
@@ -446,13 +451,13 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
       this.attemptCount,
       this.completedStages,
       undefined,
-      challengeInstructions,
-      this.failedStages
+      challengeInstructions
     );
   }
 
   ngOnDestroy() {
-    this.saveCurrentProgress();
+    // DO NOT save progress on destroy. This was causing a race condition
+    // where incomplete state was saved after progress was cleared.
   }
 
   private checkForSavedProgress() {
@@ -466,9 +471,8 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     if (savedProgress) {
       this.currentStage = savedProgress.currentStage;
       this.selectedImages = [...savedProgress.selectedImages];
-      this.attemptCount = Math.min(savedProgress.attemptCount, this.maxAttempts);
+      this.attemptCount = savedProgress.attemptCount || 0;
       this.completedStages = [...savedProgress.completedStages];
-      this.failedStages = [...(savedProgress.failedStages || [])];
     }
     this.showRestorePrompt = false;
   }
@@ -523,61 +527,58 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     }
 
     const isValid = this.validateSelection();
+    console.log('Validation result:', isValid);
+    console.log('Selected images:', this.selectedImages);
+    console.log('Correct answers:', this.currentChallenge.correctAnswers);
     
-    if (this.attemptCount < this.maxAttempts) {
-      this.attemptCount++;
-    }
+    this.attemptCount++;
 
     if (isValid) {
+      console.log('SUCCESS - Moving to next stage');
+      // SUCCESS - Add to completed stages and move forward
       if (!this.completedStages.includes(this.currentStage)) {
         this.completedStages.push(this.currentStage);
       }
       
-      this.showValidationMessage('Correct! Moving to next stage...', true);
+      this.showValidationMessage('✅ Correct! Moving to next stage...', true);
       this.saveCurrentProgress();
       
+      // Move immediately to next stage or complete
       if (this.currentStage === this.totalStages) {
+        console.log('Navigating to result page');
+        // Set end time on final completion
+        const endTime = Date.now();
+        const progress = this.stateService.loadProgress();
+        this.stateService.saveProgress(
+          this.currentStage,
+          this.selectedImages,
+          this.attemptCount,
+          this.completedStages,
+          progress?.startTime,
+          progress?.challengeInstructions,
+          endTime
+        );
         this.router.navigate(['/result']);
       } else {
+        console.log('Moving to next stage immediately');
         this.currentStage++;
         this.resetStage();
-        // DON'T regenerate challenges - keep the same ones!
-        // this.challenges = this.generateCaptchaChallenges(); // REMOVED
         this.saveCurrentProgress();
+        console.log('New stage:', this.currentStage);
       }
       
     } else {
-      const remainingAttempts = this.maxAttempts - this.attemptCount;
+      console.log('FAILURE - Regenerating challenge');
+      // FAILURE - Regenerate NEW challenge (proper CAPTCHA behavior)
+      this.showValidationMessage(
+        `❌ Incorrect selection. Generating new challenge... (Attempt ${this.attemptCount})`, 
+        false
+      );
       
-      if (remainingAttempts > 0) {
-        this.showValidationMessage(
-          `Incorrect selection. You have ${remainingAttempts} attempts remaining. Try again!`, 
-          false
-        );
-        this.saveCurrentProgress();
-      } else {
-        // Max attempts reached - stage FAILED, do NOT add to completedStages
-        if (!this.failedStages.includes(this.currentStage)) {
-          this.failedStages.push(this.currentStage);
-        }
-        
-        this.showValidationMessage(
-          'Maximum attempts reached. Moving to next stage...', 
-          false
-        );
-        
-        this.saveCurrentProgress();
-        
-        if (this.currentStage === this.totalStages) {
-          this.router.navigate(['/result']);
-        } else {
-          this.currentStage++;
-          this.resetStage();
-          // DON'T regenerate challenges - keep the same ones!
-          // this.challenges = this.generateCaptchaChallenges(); // REMOVED
-          this.saveCurrentProgress();
-        }
-      }
+      // Regenerate challenge immediately
+      this.regenerateCurrentChallenge();
+      this.resetStage();
+      this.saveCurrentProgress();
     }
   }
 
@@ -605,6 +606,32 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     this.selectedImages = [];
     this.attemptCount = 0;
     this.resetValidation();
+  }
+
+  // Regenerate ONLY the current stage's challenge (proper CAPTCHA behavior)
+  private regenerateCurrentChallenge() {
+    // Remove current stage's category from used categories so it can be regenerated
+    const currentChallengeCategory = this.challenges[this.currentStage - 1]?.correctCategory;
+    if (currentChallengeCategory) {
+      this.usedChallengeCategories.delete(currentChallengeCategory);
+    }
+    
+    // Generate a single new challenge
+    const newChallenges = this.generateCaptchaChallenges();
+    
+    // Replace only the current stage's challenge
+    this.challenges[this.currentStage - 1] = newChallenges[0];
+    
+    // Update saved instructions
+    const challengeInstructions = this.challenges.map(c => c.instruction);
+    this.stateService.saveProgress(
+      this.currentStage,
+      [],
+      this.attemptCount,
+      this.completedStages,
+      undefined,
+      challengeInstructions
+    );
   }
 
   private resetToInitialState() {
