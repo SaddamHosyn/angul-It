@@ -2,10 +2,10 @@
   <!-- Progress Restore Prompt -->
   <div *ngIf="showRestorePrompt" class="restore-prompt">
     <div class="restore-content">
-      <h3>Continue Previous Session?</h3>
-      <p>We found your previous progress. Would you like to continue where you left off?</p>
+      <h3>{{ hasCompletedAllStages ? 'Challenge Already Completed' : 'Continue Previous Session?' }}</h3>
+      <p>{{ hasCompletedAllStages ? 'You have already completed all stages. Start a new challenge?' : 'We found your previous progress. Would you like to continue where you left off?' }}</p>
       <div class="restore-buttons">
-        <button class="btn btn-primary" (click)="restoreProgress()">Continue Progress</button>
+        <button *ngIf="!hasCompletedAllStages" class="btn btn-primary" (click)="restoreProgress()">Continue Progress</button>
         <button class="btn btn-secondary" (click)="startFresh()">Start Fresh</button>
       </div>
     </div>
@@ -61,18 +61,13 @@
       </button>
     </div>
 
-    <!-- Attempt counter - shows total attempts made -->
-    <div class="attempt-info" *ngIf="attemptCount > 0">
-      <span>Total Attempts: {{ attemptCount }}</span>
-    </div>
-
     <!-- Completed stages indicator -->
     <div class="completed-stages" *ngIf="completedStages.length > 0">
       Stages Completed: {{ completedStages.join(', ') }}
     </div>
     <div class="progress-indicator">
       <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="(currentStage / totalStages) * 100"></div>
+        <div class="progress-fill" [style.width.%]="(completedStages.length / totalStages) * 100"></div>
       </div>
     </div>
   </div>

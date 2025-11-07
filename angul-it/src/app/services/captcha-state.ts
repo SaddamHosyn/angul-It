@@ -8,7 +8,6 @@ function isBrowser(): boolean {
 interface CaptchaProgress {
   currentStage: number;
   selectedImages: number[];
-  attemptCount: number;
   completedStages: number[];
   timestamp: number;
   startTime: number;
@@ -25,7 +24,7 @@ export class CaptchaState {
 
   constructor() {}
 
-  saveProgress(currentStage: number, selectedImages: number[], attemptCount: number, completedStages: number[], startTime?: number, challengeInstructions?: string[], endTime?: number | null): void {
+  saveProgress(currentStage: number, selectedImages: number[], completedStages: number[], startTime?: number, challengeInstructions?: string[], endTime?: number | null): void {
     if (!isBrowser()) return; // Guard for SSR
     
     const existingProgress = this.loadProgress();
@@ -33,7 +32,6 @@ export class CaptchaState {
     const progress: CaptchaProgress = {
       currentStage,
       selectedImages,
-      attemptCount,
       completedStages,
       timestamp: Date.now(),
       startTime: startTime || existingProgress?.startTime || Date.now(),
@@ -52,7 +50,7 @@ export class CaptchaState {
     if (!isBrowser()) return; // Guard for SSR
     
     const startTime = Date.now();
-    this.saveProgress(1, [], 0, [], startTime, undefined, null); // Initialize endTime as null
+    this.saveProgress(1, [], [], startTime, undefined, null); // Initialize endTime as null
   }
 
   loadProgress(): CaptchaProgress | null {
@@ -71,13 +69,9 @@ export class CaptchaState {
         return null;
       }
 
-      // Validate and sanitize loaded data
-      progress.attemptCount = Math.min(progress.attemptCount || 0, 100);
-      progress.currentStage = Math.max(1, Math.min(progress.currentStage || 1, 3));
-      progress.completedStages = progress.completedStages || [];
-      progress.selectedImages = progress.selectedImages || [];
-      progress.endTime = progress.endTime !== undefined ? progress.endTime : null;
-
+      // Basic validation to prevent tampering
+      progress.completedStages = progress.completedStages.filter((s: number) => s >= 1 && s <= 3);
+      
       return progress;
     } catch (error) {
       console.error('Failed to load progress from localStorage:', error);

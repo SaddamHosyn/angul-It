@@ -20,7 +20,6 @@ export class ResultComponent implements OnInit, OnDestroy {
   results: ChallengeResult[] = [];
   totalStages = 3;
   completedStages = 0;
-  showCelebration = false;
   completionTime: number | null = null; // To store completion time in seconds
 
   constructor(
@@ -37,7 +36,6 @@ export class ResultComponent implements OnInit, OnDestroy {
     }
     
     this.loadResults();
-    this.triggerCelebration();
   }
 
   // Clear progress when leaving results page
@@ -71,26 +69,6 @@ export class ResultComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  // ✅ UPDATED: Enhanced celebration with auto-dismiss
-  private triggerCelebration() {
-    if (this.completedStages >= this.totalStages) {
-      setTimeout(() => {
-        this.showCelebration = true;
-        
-        // Auto-hide celebration after 4 seconds
-        setTimeout(() => {
-          this.showCelebration = false;
-        }, 4000);
-        
-      }, 500);
-    }
-  }
-
-  // ✅ NEW: Add method to manually dismiss celebration
-  dismissCelebration() {
-    this.showCelebration = false;
-  }
 
   startNewChallenge() {
     // Clear all saved progress

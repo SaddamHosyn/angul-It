@@ -8,11 +8,6 @@
 .results-header {
   text-align: center;
   margin-bottom: 2rem;
-  transition: all 0.3s ease;
-}
-
-.results-header.celebration {
-  transform: scale(1.05);
 }
 
 .results-header h1 {
@@ -312,127 +307,6 @@
   transform: translateY(-2px);
 }
 
-.celebration-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.5s ease;
-  cursor: pointer; /* Show it's clickable */
-}
-
-
-.celebration-content {
-  text-align: center;
-  color: white;
-  position: relative;
-  cursor: default; /* Reset cursor for content */
-}
-
-
-
-.celebration-emoji {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  animation: bounce 1s infinite;
-}
-
-
-
-.celebration-text {
-  font-size: 2rem;
-  font-weight: bold;
-  animation: pulse 2s infinite;
-  margin-bottom: 1rem;
-}
-
-
-
-
-
-
-
-
-.celebration-close {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid white;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.celebration-close:hover {
-  background: rgba(255, 255, 255, 0.4);
-  transform: scale(1.1);
-}
-
-.celebration-instruction {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin-top: 1rem;
-  font-style: italic;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-30px);
-  }
-  60% {
-    transform: translateY(-15px);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
 @media (max-width: 768px) {
   .results-container {
     padding: 1rem;
@@ -448,13 +322,5 @@
   
   .action-buttons {
     flex-direction: column;
-  }
-  
-  .celebration-emoji {
-    font-size: 3rem;
-  }
-  
-  .celebration-text {
-    font-size: 1.5rem;
   }
 }

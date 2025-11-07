@@ -1,6 +1,6 @@
 <div class="results-container">
   <!-- Header Section -->
-  <div class="results-header" [class.celebration]="showCelebration">
+  <div class="results-header">
     <h1>🎯 Challenge Results</h1>
     <div class="completion-badge" [class]="performanceRating.toLowerCase()">
       {{ performanceRating }}
@@ -45,52 +45,5 @@
   <div class="action-buttons">
     <button class="btn btn-primary" (click)="startNewChallenge()">🔄 Start New Challenge</button>
     <button class="btn btn-secondary" (click)="goHome()">🏠 Go Home</button>
-  </div>
-
-  <!-- Celebration Animation -->
-  <div *ngIf="showCelebration" class="celebration-overlay" (click)="dismissCelebration()">
-    <div class="celebration-content" (click)="$event.stopPropagation()">
-      <div class="celebration-emoji">🎉🎊✨</div>
-      <div class="celebration-text">Amazing Work!</div>
-
-      <!-- Add close button -->
-      <button class="celebration-close" (click)="dismissCelebration()">✕</button>
-
-      <!-- Add instruction -->
-      <p class="celebration-instruction">Click anywhere to continue</p>
-    </div>
-  </div>
-</div>
-
-<div
-  class="result-summary"
-  [ngClass]="{
-    'success-bg': completedStages >= totalStages,
-    'fail-bg': completedStages < totalStages
-  }"
->
-  <div class="icon-container">
-    <img src="assets/icons/challenges.png" alt="Challenge Icon" class="challenge-icon" />
-  </div>
-  <h2>Challenge Results</h2>
-  <div
-    class="performance-badge"
-    [ngClass]="performanceRating.toLowerCase().replace(' ', '-').replace('!', '')"
-  >
-    {{ performanceRating }}
-  </div>
-  <div class="stages-completed-box">
-    <span class="completed-count">{{ completedStages }}</span> /
-    <span class="total-count">{{ totalStages }}</span>
-    <div class="stages-label">STAGES COMPLETED</div>
-  </div>
-
-  <!-- Display Completion Time -->
-  <div *ngIf="completionTime" class="time-taken">
-    Completed in {{ completionTime | number : '1.1-2' }} seconds
-  </div>
-
-  <div class="completion-message">
-    {{ completionMessage }}
   </div>
 </div>

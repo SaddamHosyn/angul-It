@@ -32,10 +32,10 @@ export class CaptchaComponent implements OnInit, OnDestroy {
   showValidation = false;
   validationMessage = '';
   isCorrect = false;
-  attemptCount = 0; // Track attempts for current challenge
   isTransitioning = false; // Prevent multiple clicks during transition
   
   showRestorePrompt = false;
+  hasCompletedAllStages = false; // Track if user completed all stages
 
   challenges: Challenge[] = [];
   
@@ -448,7 +448,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     this.stateService.saveProgress(
       this.currentStage,
       this.selectedImages,
-      this.attemptCount,
       this.completedStages,
       undefined,
       challengeInstructions
@@ -462,6 +461,15 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
 
   private checkForSavedProgress() {
     if (this.stateService.hasSavedProgress()) {
+      const savedProgress = this.stateService.loadProgress();
+      
+      // Check if all stages are completed
+      if (savedProgress && savedProgress.completedStages.length >= this.totalStages) {
+        this.hasCompletedAllStages = true;
+      } else {
+        this.hasCompletedAllStages = false;
+      }
+      
       this.showRestorePrompt = true;
     }
   }
@@ -471,7 +479,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     if (savedProgress) {
       this.currentStage = savedProgress.currentStage;
       this.selectedImages = [...savedProgress.selectedImages];
-      this.attemptCount = savedProgress.attemptCount || 0;
       this.completedStages = [...savedProgress.completedStages];
     }
     this.showRestorePrompt = false;
@@ -530,8 +537,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     console.log('Validation result:', isValid);
     console.log('Selected images:', this.selectedImages);
     console.log('Correct answers:', this.currentChallenge.correctAnswers);
-    
-    this.attemptCount++;
 
     if (isValid) {
       console.log('SUCCESS - Moving to next stage');
@@ -552,7 +557,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
         this.stateService.saveProgress(
           this.currentStage,
           this.selectedImages,
-          this.attemptCount,
           this.completedStages,
           progress?.startTime,
           progress?.challengeInstructions,
@@ -571,7 +575,7 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
       console.log('FAILURE - Regenerating challenge');
       // FAILURE - Regenerate NEW challenge (proper CAPTCHA behavior)
       this.showValidationMessage(
-        `❌ Incorrect selection. Generating new challenge... (Attempt ${this.attemptCount})`, 
+        `❌ Incorrect selection. Generating new challenge...`, 
         false
       );
       
@@ -604,7 +608,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
 
   private resetStage() {
     this.selectedImages = [];
-    this.attemptCount = 0;
     this.resetValidation();
   }
 
@@ -627,7 +630,6 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     this.stateService.saveProgress(
       this.currentStage,
       [],
-      this.attemptCount,
       this.completedStages,
       undefined,
       challengeInstructions
