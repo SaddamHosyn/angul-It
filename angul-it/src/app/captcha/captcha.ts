@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CaptchaState } from '../services/captcha-state';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -14,12 +15,14 @@ interface Challenge {
   images: ChallengeImage[];
   correctCategory: string;
   correctAnswers: number[];
+  type?: 'selection' | 'text-input'; // Challenge type
+  textAnswer?: string; // For text input challenges
 }
 
 @Component({
   selector: 'app-captcha',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './captcha.html',
   styleUrl: './captcha.css'
 })
@@ -41,6 +44,9 @@ export class CaptchaComponent implements OnInit, OnDestroy {
   
   private usedChallengeCategories: Set<string> = new Set();
 
+  // Text input related
+  userTextInput = '';
+
   constructor(
     private router: Router,
     private stateService: CaptchaState,
@@ -55,6 +61,16 @@ export class CaptchaComponent implements OnInit, OnDestroy {
     } else {
       return Buffer.from(str).toString('base64');
     }
+  }
+
+  // Escape XML special characters for SVG
+  private escapeXml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 // fisher-yates shuffle
   private shuffleArray<T>(array: T[]): T[] {
@@ -75,7 +91,8 @@ export class CaptchaComponent implements OnInit, OnDestroy {
       correctCategory: string;
     } & (
       { type: 'math'; equations: { equation: string; result: number; isCorrect: boolean }[] } |
-      { type: 'text'; texts: { text: string; isCorrect: boolean }[] }
+      { type: 'text'; texts: { text: string; isCorrect: boolean }[] } |
+      { type: 'text-input'; displayText: string; answer: string; }
     );
 
     const allChallenges: ChallengeData[] = [
@@ -112,6 +129,13 @@ export class CaptchaComponent implements OnInit, OnDestroy {
         ]
       },
       {
+        type: 'text-input',
+        instruction: "Type the word you see below",
+        correctCategory: "input-verify",
+        displayText: "VERIFY",
+        answer: "VERIFY"
+      },
+      {
         type: 'math',
         instruction: "Select all images where the SUM is GREATER than 20",
         correctCategory: "sum20",
@@ -144,6 +168,13 @@ export class CaptchaComponent implements OnInit, OnDestroy {
         ]
       },
       {
+        type: 'text-input',
+        instruction: "Solve the equation and enter the answer",
+        correctCategory: "input-math15",
+        displayText: "8 + 7 = ?",
+        answer: "15"
+      },
+      {
         type: 'math',
         instruction: "Select all images where RESULT equals 12",
         correctCategory: "math12",
@@ -174,6 +205,13 @@ export class CaptchaComponent implements OnInit, OnDestroy {
           { text: "FAIL", isCorrect: false },
           { text: "RISK", isCorrect: false }
         ]
+      },
+      {
+        type: 'text-input',
+        instruction: "Type the security code shown below",
+        correctCategory: "input-code",
+        displayText: "A7X9K2",
+        answer: "A7X9K2"
       },
       {
         type: 'math',
@@ -238,6 +276,13 @@ export class CaptchaComponent implements OnInit, OnDestroy {
           { text: "FAIL", isCorrect: false },
           { text: "BAD", isCorrect: false }
         ]
+      },
+      {
+        type: 'text-input',
+        instruction: "Enter the shown verification code",
+        correctCategory: "input-code2",
+        displayText: "XK94P",
+        answer: "XK94P"
       }
     ];
 
@@ -257,11 +302,32 @@ export class CaptchaComponent implements OnInit, OnDestroy {
       this.usedChallengeCategories.add(challenge.correctCategory);
     });
 
+    console.log('Generated challenges:', selectedChallenges.map(c => ({ type: c.type, category: c.correctCategory })));
+
     return selectedChallenges.map(challenge => {
       let imagesData: ChallengeImage[];
       let correctIndices: number[] = [];
 
-      if (challenge.type === 'math') {
+      if (challenge.type === 'text-input') {
+        // Text input challenge - create single display image
+        // Use appropriate captcha generator based on content
+        const isMathChallenge = challenge.displayText.match(/[+\-×÷=\d]/);
+        const imageSrc = isMathChallenge 
+          ? this.createNoisyMathCaptcha(challenge.displayText)
+          : this.createNoisyTextCaptcha(challenge.displayText);
+          
+        return {
+          instruction: challenge.instruction,
+          images: [{
+            src: imageSrc,
+            alt: `Text: ${challenge.displayText}`
+          }],
+          correctCategory: challenge.correctCategory,
+          correctAnswers: [],
+          type: 'text-input' as const,
+          textAnswer: challenge.answer
+        };
+      } else if (challenge.type === 'math') {
         const shuffledEquations = this.shuffleArray(challenge.equations);
         
         imagesData = shuffledEquations.map((eq, idx) => {
@@ -289,7 +355,8 @@ export class CaptchaComponent implements OnInit, OnDestroy {
         instruction: challenge.instruction,
         images: imagesData,
         correctCategory: challenge.correctCategory,
-        correctAnswers: correctIndices
+        correctAnswers: correctIndices,
+        type: 'selection' as const
       };
     });
   }
@@ -341,7 +408,7 @@ private createNoisyMathCaptcha(equation: string, seed: number = Date.now()): str
             filter="url(#blur${randomId}) url(#distort${randomId})"
             transform="rotate(${-8 + Math.random() * 16} 100 40)"
             letter-spacing="${-1 + Math.random() * 2}">
-        ${equation}
+        ${this.escapeXml(equation)}
       </text>
       
       <rect width="200" height="80" fill="white" opacity="0.1"/>
@@ -396,7 +463,7 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
             filter="url(#blur${randomId}) url(#wave${randomId})"
             transform="rotate(${-6 + Math.random() * 12} 100 40) skewX(${-3 + Math.random() * 6})"
             letter-spacing="${0.5 + Math.random() * 2}">
-        ${text}
+        ${this.escapeXml(text)}
       </text>
       
       ${Array.from({length: 2}, () => {
@@ -431,11 +498,13 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
     // Only initialize if there's no progress at all.
     // This prevents re-initialization when navigating back from the results page.
     if (!this.stateService.hasSavedProgress()) {
+      console.log('No saved progress - starting fresh with new challenges including text-input types');
       // Don't initialize here anymore. Let the user start fresh.
     } else {
       const progress = this.stateService.loadProgress();
       if (progress && progress.completedStages.length < 3) {
         // There's partial progress, so load it.
+        console.log('Found saved progress - Click "Start Fresh" to see new text-input challenges!');
         this.restoreProgress();
       }
     }
@@ -493,11 +562,22 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
   }
 
   get currentChallenge(): Challenge {
-    return this.challenges[this.currentStage - 1];
+    const challenge = this.challenges[this.currentStage - 1];
+    // Ensure type is set for backward compatibility
+    if (!challenge.type) {
+      challenge.type = 'selection';
+    }
+    console.log('Current challenge type:', challenge.type, 'Stage:', this.currentStage);
+    return challenge;
+  }
+
+  isTextInputChallenge(): boolean {
+    return this.currentChallenge?.type === 'text-input';
   }
 
   toggleImageSelection(index: number) {
     if (this.showValidation && this.isCorrect) return;
+    if (this.currentChallenge.type === 'text-input') return; // No selection for text input
 
     const selectedIndex = this.selectedImages.indexOf(index);
     if (selectedIndex > -1) {
@@ -514,7 +594,15 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
   }
 
   validateSelection(): boolean {
-    const correctAnswers = this.currentChallenge.correctAnswers;
+    const challenge = this.currentChallenge;
+    
+    // Text input validation - case sensitive
+    if (challenge.type === 'text-input') {
+      return this.userTextInput.trim() === challenge.textAnswer;
+    }
+    
+    // Image selection validation
+    const correctAnswers = challenge.correctAnswers;
     const selectedImages = this.selectedImages;
     
     const selectedSet = new Set(selectedImages);
@@ -528,15 +616,27 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
   }
 
   nextStage() {
-    if (this.selectedImages.length === 0) {
+    const isTextInput = this.currentChallenge.type === 'text-input';
+    
+    if (!isTextInput && this.selectedImages.length === 0) {
       this.showValidationMessage('Please select at least one image before proceeding.', false);
+      return;
+    }
+    
+    if (isTextInput && !this.userTextInput.trim()) {
+      this.showValidationMessage('Please enter your answer before proceeding.', false);
       return;
     }
 
     const isValid = this.validateSelection();
     console.log('Validation result:', isValid);
-    console.log('Selected images:', this.selectedImages);
-    console.log('Correct answers:', this.currentChallenge.correctAnswers);
+    if (!isTextInput) {
+      console.log('Selected images:', this.selectedImages);
+      console.log('Correct answers:', this.currentChallenge.correctAnswers);
+    } else {
+      console.log('User input:', this.userTextInput);
+      console.log('Correct answer:', this.currentChallenge.textAnswer);
+    }
 
     if (isValid) {
       console.log('SUCCESS - Moving to next stage');
@@ -575,7 +675,7 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
       console.log('FAILURE - Regenerating challenge');
       // FAILURE - Regenerate NEW challenge (proper CAPTCHA behavior)
       this.showValidationMessage(
-        `❌ Incorrect selection. Generating new challenge...`, 
+        `❌ Incorrect ${isTextInput ? 'answer' : 'selection'}. Generating new challenge...`, 
         false
       );
       
@@ -608,6 +708,7 @@ private createNoisyTextCaptcha(text: string, seed: number = Date.now()): string 
 
   private resetStage() {
     this.selectedImages = [];
+    this.userTextInput = '';
     this.resetValidation();
   }
 

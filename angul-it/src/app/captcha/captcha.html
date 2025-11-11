@@ -27,7 +27,25 @@
       {{ validationMessage }}
     </div>
 
-    <div class="image-grid">
+    <!-- TEXT INPUT CHALLENGE -->
+    <div *ngIf="currentChallenge.type === 'text-input'" class="text-input-challenge">
+      <div class="display-image">
+        <img [src]="getSafeImage(currentChallenge.images[0].src)" [alt]="currentChallenge.images[0].alt" />
+      </div>
+      <div class="input-container">
+        <input 
+          type="text" 
+          class="text-input" 
+          [(ngModel)]="userTextInput"
+          placeholder="Enter your answer here..."
+          [disabled]="showValidation && isCorrect"
+          (keyup.enter)="nextStage()"
+        />
+      </div>
+    </div>
+
+    <!-- IMAGE SELECTION CHALLENGE -->
+    <div *ngIf="currentChallenge.type !== 'text-input'" class="image-grid">
       <div
         *ngFor="let image of currentChallenge.images; let i = index"
         class="image-item"
@@ -55,7 +73,7 @@
       <button
         class="btn btn-primary"
         (click)="nextStage()"
-        [disabled]="selectedImages.length === 0"
+        [disabled]="currentChallenge.type === 'text-input' ? !userTextInput.trim() : selectedImages.length === 0"
       >
         {{ currentStage === totalStages ? 'Complete' : 'Verify & Next' }}
       </button>
